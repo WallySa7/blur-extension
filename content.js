@@ -14,44 +14,19 @@ class ImageBlurFilter {
     this.init();
   }
 
-  // CRITICAL: Inject CSS immediately to prevent any image flash
-  injectPreBlurCSS() {
-    const style = document.createElement("style");
-    style.id = "blur-extension-preload";
-    style.textContent = `
-      img:not([data-blur-unblurred]):not([data-blur-processed]) {
-        filter: blur(${this.settings?.blurIntensity || 10}px) !important;
-        transition: filter 0.1s ease !important;
-      }
-    `;
-
-    // Inject as early as possible
-    if (document.head) {
-      document.head.appendChild(style);
-    } else {
-      // If head doesn't exist yet, inject into document
-      document.appendChild(style);
-    }
-  }
-
   async init() {
-    // Get settings from background with caching
+    // CRITICAL: Check whitelist status FIRST before doing anything
     this.settings = await this.getSettings();
     this.isWhitelisted = await this.checkWhitelist();
 
-    // Remove or update pre-blur CSS based on settings
+    // If extension is disabled OR site is whitelisted, do absolutely nothing
     if (!this.settings.enabled || this.isWhitelisted) {
-      this.removePreBlurCSS();
-      return;
+      return; // Exit completely without any DOM modifications
     }
 
-    // Update CSS with actual blur intensity from settings
-    this.updatePreBlurCSS();
-
-    // Process existing images in batches for better performance
+    // Only proceed with blur functionality if not whitelisted
+    this.injectPreBlurCSS();
     this.batchProcessExistingImages();
-
-    // Set up optimized observers
     this.setupOptimizedObservers();
 
     // Listen for settings changes
@@ -77,18 +52,23 @@ class ImageBlurFilter {
     });
   }
 
-  // Remove default blur CSS when extension is disabled or site is whitelisted
-  removePreBlurCSS() {
+  // CRITICAL: Inject CSS immediately to prevent any image flash
+  injectPreBlurCSS() {
     const style = document.createElement("style");
-    style.id = "blur-extension-disable";
+    style.id = "blur-extension-preload";
     style.textContent = `
       img:not([data-blur-unblurred]):not([data-blur-processed]) {
-        filter: none !important;
+        filter: blur(${this.settings?.blurIntensity || 10}px) !important;
+        transition: filter 0.1s ease !important;
       }
     `;
 
+    // Inject as early as possible
     if (document.head) {
       document.head.appendChild(style);
+    } else {
+      // If head doesn't exist yet, inject into document
+      document.appendChild(style);
     }
   }
 
@@ -742,40 +722,28 @@ class ImageBlurFilter {
     }
   }
 
-  handleSettingsChange(newSettings) {
+  async handleSettingsChange(newSettings) {
     this.settings = newSettings;
 
-    // Remove any existing overrides first
-    const existingDisable = document.getElementById("blur-extension-disable");
-    const existingOverride = document.getElementById("blur-extension-override");
-    if (existingDisable) existingDisable.remove();
-    if (existingOverride) existingOverride.remove();
+    // Re-check whitelist status
+    this.isWhitelisted = await this.checkWhitelist();
 
-    if (!newSettings.enabled) {
+    // If extension is disabled or newly whitelisted, remove everything
+    if (!newSettings.enabled || this.isWhitelisted) {
       this.removeAllBlurs();
-      this.removePreBlurCSS();
       return;
     }
 
     // Update CSS with new intensity
     this.updatePreBlurCSS();
 
-    // Re-check whitelist
-    this.checkWhitelist().then((isWhitelisted) => {
-      this.isWhitelisted = isWhitelisted;
-      if (isWhitelisted) {
-        this.removeAllBlurs();
-        this.removePreBlurCSS();
-      } else {
-        // Update existing blurred images with new intensity
-        for (const element of this.blurredElements) {
-          element.style.filter = `blur(${newSettings.blurIntensity}px)`;
-        }
+    // Update existing blurred images with new intensity
+    for (const element of this.blurredElements) {
+      element.style.filter = `blur(${newSettings.blurIntensity}px)`;
+    }
 
-        // Re-process images if needed
-        this.batchProcessExistingImages();
-      }
-    });
+    // Re-process images if needed
+    this.batchProcessExistingImages();
   }
 
   removeAllBlurs() {
@@ -788,10 +756,10 @@ class ImageBlurFilter {
     }
 
     // Clean up CSS overrides
-    const existingDisable = document.getElementById("blur-extension-disable");
     const existingOverride = document.getElementById("blur-extension-override");
-    if (existingDisable) existingDisable.remove();
+    const existingPreload = document.getElementById("blur-extension-preload");
     if (existingOverride) existingOverride.remove();
+    if (existingPreload) existingPreload.remove();
 
     // Efficiently remove all blurs
     for (const element of this.blurredElements) {
