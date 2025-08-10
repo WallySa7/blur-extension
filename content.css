@@ -1,0 +1,144 @@
+/* High-performance styles for blur extension */
+
+/* CRITICAL: Immediate blur for all images before processing */
+img:not([data-blur-unblurred]):not([data-blur-processed]) {
+  filter: blur(10px) !important;
+  transition: filter 0.1s ease !important;
+}
+
+.blur-wrapper {
+  position: relative !important;
+  display: inline-block !important;
+  max-width: 100% !important;
+  line-height: 0 !important;
+}
+
+.blur-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.2s ease !important;
+  z-index: 10000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  will-change: opacity !important;
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+.blur-bg-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.2s ease !important;
+  z-index: 10000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  will-change: opacity !important;
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+.unblur-btn,
+.unblur-bg-btn {
+  background: rgba(0, 0, 0, 0.8) !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 12px !important;
+  border-radius: 50% !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  z-index: 10001 !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  will-change: transform, background !important;
+  user-select: none !important;
+}
+
+.unblur-btn:hover,
+.unblur-bg-btn:hover {
+  background: rgba(0, 0, 0, 0.9) !important;
+  transform: scale(1.1) !important;
+}
+
+.unblur-btn:active,
+.unblur-bg-btn:active {
+  transform: scale(0.95) !important;
+}
+
+/* Optimized image processing states */
+img[data-blur-processed="true"] {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  will-change: filter !important;
+}
+
+/* Ensure unblurred images behave normally */
+img[data-blur-unblurred="true"] {
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  filter: none !important;
+  transition: none !important;
+}
+
+/* Ensure proper positioning for background image overlays */
+[data-blur-bg-processed="true"] {
+  position: relative !important;
+  will-change: filter !important;
+}
+
+/* Ensure unblurred background elements behave normally */
+[data-blur-bg-unblurred="true"] {
+  filter: none !important;
+  transition: none !important;
+}
+
+/* Show overlays on hover - using CSS for better performance */
+.blur-wrapper:hover .blur-overlay {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+[data-blur-bg-processed="true"]:hover .blur-bg-overlay {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Performance optimizations */
+.blur-overlay,
+.blur-bg-overlay {
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
+}
+
+.unblur-btn,
+.unblur-bg-btn {
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
+}
+
+/* Prevent layout shifts */
+.blur-wrapper img {
+  display: block !important;
+  max-width: 100% !important;
+  height: auto !important;
+}

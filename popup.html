@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Image Blur Filter</h1>
+        <div class="toggle-container">
+          <label class="toggle">
+            <input type="checkbox" id="enableToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </header>
+
+      <div class="section">
+        <label for="blurIntensity">Blur Intensity:</label>
+        <div class="range-container">
+          <input type="range" id="blurIntensity" min="5" max="50" step="1" />
+          <span id="blurValue">10</span>px
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Current Site</h3>
+        <div class="current-site">
+          <span id="currentDomain">Loading...</span>
+          <button id="toggleWhitelist" class="btn-secondary">
+            Add to Whitelist
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Whitelisted Domains</h3>
+        <div class="whitelist-container">
+          <div class="input-group">
+            <input type="text" id="domainInput" placeholder="example.com" />
+            <button id="addDomain" class="btn-primary">Add</button>
+          </div>
+          <ul id="whitelistItems"></ul>
+        </div>
+      </div>
+
+      <div class="section">
+        <button id="unblurAll" class="btn-secondary full-width">
+          Unblur All Images on This Page
+        </button>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
